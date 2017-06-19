@@ -16,6 +16,7 @@
 
 package com.basistech.rosette.api;
 
+import com.basistech.rosette.RosetteRuntimeException;
 import com.basistech.rosette.api.common.AbstractRosetteAPI;
 import com.basistech.rosette.apimodel.CategoriesResponse;
 import com.basistech.rosette.apimodel.DocumentRequest;
@@ -23,6 +24,8 @@ import com.basistech.rosette.apimodel.EntitiesResponse;
 import com.basistech.rosette.apimodel.ErrorResponse;
 import com.basistech.rosette.apimodel.LanguageResponse;
 import com.basistech.rosette.apimodel.MorphologyResponse;
+import com.basistech.rosette.apimodel.NameDeduplicationRequest;
+import com.basistech.rosette.apimodel.NameDeduplicationResponse;
 import com.basistech.rosette.apimodel.NameSimilarityRequest;
 import com.basistech.rosette.apimodel.NameSimilarityResponse;
 import com.basistech.rosette.apimodel.NameTranslationRequest;
@@ -31,6 +34,7 @@ import com.basistech.rosette.apimodel.RelationshipsResponse;
 import com.basistech.rosette.apimodel.Request;
 import com.basistech.rosette.apimodel.SentimentResponse;
 import com.basistech.rosette.apimodel.SyntaxDependenciesResponse;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHeaders;
@@ -60,6 +64,8 @@ public class RosetteAPITest extends AbstractTest {
     private HttpRosetteAPI api;
     private String responseStr;
     private MockServerClient mockServer;
+    private String mockServiceUrl = "http://localhost:" + Integer.toString(serverPort) + "/rest/v1";
+
 
     public RosetteAPITest(String filename) {
         testFilename = filename;
@@ -125,7 +131,6 @@ public class RosetteAPITest extends AbstractTest {
                     .withHeader("X-RosetteAPI-Concurrency", "5")
                     .withBody(INFO_REPONSE, StandardCharsets.UTF_8));
 
-            String mockServiceUrl = "http://localhost:" + Integer.toString(serverPort) + "/rest/v1";
             api = new HttpRosetteAPI.Builder()
                     .key("my-key-123")
                     .url(mockServiceUrl)
@@ -258,6 +263,39 @@ public class RosetteAPITest extends AbstractTest {
             verifyEntity(response);
         } catch (HttpRosetteAPIException e) {
             verifyException(e);
+        }
+    }
+
+    @Test
+    public void testIgnoredUnknownField() throws IOException {
+        if ("unknown-field-entities.json".equals(testFilename)) {
+            DocumentRequest<?> request = readValue(DocumentRequest.class);
+            try {
+                EntitiesResponse response = api.perform(AbstractRosetteAPI.ENTITIES_SERVICE_PATH, request, EntitiesResponse.class);
+                verifyEntity(response);
+            } catch (HttpRosetteAPIException e) {
+                verifyException(e);
+            }
+        }
+    }
+
+    @Test
+    public void testNonIgnoredUnknownField() throws IOException {
+        if ("unknown-field-entities.json".equals(testFilename)) {
+            DocumentRequest<?> request = readValue(DocumentRequest.class);
+            HttpRosetteAPI tmpApi = new HttpRosetteAPI.Builder()
+                    .key("my-key-123")
+                    .url(mockServiceUrl)
+                    .onlyAcceptKnownFields(true)
+                    .build();
+            try {
+                tmpApi.perform(AbstractRosetteAPI.ENTITIES_SERVICE_PATH, request, EntitiesResponse.class);
+            } catch (RosetteRuntimeException e) {
+                if (e.getCause() instanceof UnrecognizedPropertyException) {
+                    return;
+                }
+            }
+            fail("Unknown field is ignored when it shouldn't be ");
         }
     }
 
@@ -425,5 +463,30 @@ public class RosetteAPITest extends AbstractTest {
     private void verifyException(HttpRosetteAPIException e) throws IOException {
         ErrorResponse goldResponse = mapper.readValue(responseStr, ErrorResponse.class);
         assertEquals(goldResponse.getCode(), e.getErrorResponse().getCode());
+    }
+
+    @Test
+    public void testNameDeduplication() throws IOException {
+        if (!(testFilename.endsWith("-name-deduplication.json"))) {
+            return;
+        }
+        NameDeduplicationRequest request = readValueNameDeduplication();
+        try {
+            NameDeduplicationResponse response = api.perform(AbstractRosetteAPI.NAME_DEDUPLICATION_SERVICE_PATH,
+                    request, NameDeduplicationResponse.class);
+            verifyNameDeduplication(response);
+        } catch (HttpRosetteAPIException e) {
+            verifyException(e);
+        }
+    }
+
+    private void verifyNameDeduplication(NameDeduplicationResponse response) throws IOException {
+        NameDeduplicationResponse goldResponse = mapper.readValue(responseStr, NameDeduplicationResponse.class);
+        assertEquals(goldResponse.getResults(),response.getResults());
+    }
+
+    private NameDeduplicationRequest readValueNameDeduplication() throws IOException {
+        File input = new File("src/test/mock-data/request", testFilename);
+        return mapper.readValue(input, NameDeduplicationRequest.class);
     }
 }

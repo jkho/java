@@ -1,5 +1,5 @@
 /*
-* Copyright 2014 Basis Technology Corp.
+* Copyright 2017 Basis Technology Corp.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.basistech.rosette.apimodel.jackson;
 
 import com.basistech.rosette.apimodel.AccuracyMode;
+import com.basistech.rosette.apimodel.AdmRequest;
 import com.basistech.rosette.apimodel.CategoriesOptions;
 import com.basistech.rosette.apimodel.CategoriesResponse;
 import com.basistech.rosette.apimodel.ConstantsResponse;
@@ -36,6 +37,8 @@ import com.basistech.rosette.apimodel.LanguageWeight;
 import com.basistech.rosette.apimodel.MorphologyOptions;
 import com.basistech.rosette.apimodel.MorphologyResponse;
 import com.basistech.rosette.apimodel.Name;
+import com.basistech.rosette.apimodel.NameDeduplicationRequest;
+import com.basistech.rosette.apimodel.NameDeduplicationResponse;
 import com.basistech.rosette.apimodel.NameSimilarityRequest;
 import com.basistech.rosette.apimodel.NameSimilarityResponse;
 import com.basistech.rosette.apimodel.NameTranslationRequest;
@@ -53,6 +56,8 @@ import com.basistech.rosette.apimodel.SentimentResponse;
 import com.basistech.rosette.apimodel.SyntaxDependenciesResponse;
 import com.basistech.rosette.apimodel.TextEmbeddingResponse;
 import com.basistech.rosette.apimodel.TokensResponse;
+import com.basistech.rosette.apimodel.TransliterationOptions;
+import com.basistech.rosette.apimodel.TransliterationResponse;
 import com.basistech.rosette.apimodel.batch.BatchRequest;
 import com.basistech.rosette.apimodel.batch.BatchRequestItem;
 import com.basistech.rosette.apimodel.batch.BatchResponse;
@@ -99,12 +104,15 @@ public class ApiModelMixinModule extends AnnotatedDataModelModule {
         context.setMixInAnnotations(MorphologyOptions.class, MorphologyOptionsMixin.class);
         context.setMixInAnnotations(MorphologyResponse.class, MorphologyResponseMixin.class);
         context.setMixInAnnotations(Name.class, NameMixin.class);
+        context.setMixInAnnotations(NameDeduplicationRequest.class, NameDeduplicationRequestMixin.class);
+        context.setMixInAnnotations(NameDeduplicationResponse.class, NameDeduplicationResponseMixin.class);
         context.setMixInAnnotations(NameSimilarityRequest.class, NameSimilarityRequestMixin.class);
         context.setMixInAnnotations(NameSimilarityResponse.class, NameSimilarityResponseMixin.class);
         context.setMixInAnnotations(NameTranslationRequest.class, NameTranslationRequestMixin.class);
         context.setMixInAnnotations(NameTranslationResponse.class, NameTranslationResponseMixin.class);
         context.setMixInAnnotations(PingResponse.class, PingResponseMixin.class);
         context.setMixInAnnotations(DocumentRequest.class, DocumentRequestMixin.class);
+        context.setMixInAnnotations(AdmRequest.class, AdmRequestMixin.class);
         context.setMixInAnnotations(SentencesResponse.class, SentencesResponseMixin.class);
         context.setMixInAnnotations(SentimentOptions.class, SentimentOptionsMixin.class);
         context.setMixInAnnotations(SentimentResponse.class, SentimentResponseMixin.class);
@@ -113,6 +121,8 @@ public class ApiModelMixinModule extends AnnotatedDataModelModule {
         context.setMixInAnnotations(Relationship.class, RelationshipsMixin.class);
         context.setMixInAnnotations(RelationshipsOptions.class, RelationshipsOptionsMixin.class);
         context.setMixInAnnotations(Options.class, OptionsMixin.class);
+        context.setMixInAnnotations(TransliterationOptions.class, TransliterationOptionsMixin.class);
+        context.setMixInAnnotations(TransliterationResponse.class, TransliterationResponseMixin.class);
 
         context.setMixInAnnotations(AccuracyMode.class, AccuracyModeMixin.class);
         SimpleSerializers keySerializers = new SimpleSerializers();

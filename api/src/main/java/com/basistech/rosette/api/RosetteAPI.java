@@ -28,6 +28,8 @@ import com.basistech.rosette.apimodel.LanguageResponse;
 import com.basistech.rosette.apimodel.MorphologyOptions;
 import com.basistech.rosette.apimodel.MorphologyResponse;
 import com.basistech.rosette.apimodel.Name;
+import com.basistech.rosette.apimodel.NameDeduplicationRequest;
+import com.basistech.rosette.apimodel.NameDeduplicationResponse;
 import com.basistech.rosette.apimodel.NameSimilarityRequest;
 import com.basistech.rosette.apimodel.NameSimilarityResponse;
 import com.basistech.rosette.apimodel.NameTranslationRequest;
@@ -48,6 +50,7 @@ import com.basistech.rosette.apimodel.jackson.ApiModelMixinModule;
 import com.basistech.rosette.apimodel.jackson.DocumentRequestMixin;
 import com.basistech.util.LanguageCode;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.io.ByteStreams;
@@ -121,6 +124,7 @@ public class RosetteAPI implements Closeable {
     public static final String CATEGORIES_SERVICE_PATH = "/categories";
     public static final String RELATIONSHIPS_SERVICE_PATH = "/relationships";
     public static final String SENTIMENT_SERVICE_PATH = "/sentiment";
+    public static final String NAME_DEDUPLICATION_SERVICE_PATH = "/name-deduplication";
     public static final String NAME_TRANSLATION_SERVICE_PATH = "/name-translation";
     public static final String NAME_SIMILARITY_SERVICE_PATH = "/name-similarity";
     public static final String TOKENS_SERVICE_PATH = "/tokens";
@@ -177,7 +181,7 @@ public class RosetteAPI implements Closeable {
         }
         this.failureRetries = 1;
         mapper = ApiModelMixinModule.setupObjectMapper(new ObjectMapper());
-
+        mapper.configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, false);
         initClient(key, null);
     }
 
@@ -204,6 +208,7 @@ public class RosetteAPI implements Closeable {
         urlBase = urlToCall.trim().replaceAll("/+$", "");
         this.failureRetries = failureRetries;
         mapper = ApiModelMixinModule.setupObjectMapper(new ObjectMapper());
+        mapper.configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, false);
         this.connectionConcurrency = connectionConcurrency;
 
         if (httpClient == null) {
@@ -356,6 +361,20 @@ public class RosetteAPI implements Closeable {
     public NameTranslationResponse getNameTranslation(NameTranslationRequest request)
             throws RosetteAPIException, IOException {
         return sendPostRequest(request, urlBase + NAME_TRANSLATION_SERVICE_PATH, NameTranslationResponse.class);
+    }
+
+    /**
+     * Returns a list of cluster IDs to be used in deduplication from a list of names specified in
+     * NameDeduplicationRequest.
+     *
+     * @param request NameDeduplication contains the names to be deduplicated and the score threshold.
+     * @return the response.
+     * @throws RosetteAPIException - If there is a problem with the Rosette API request.
+     * @throws IOException         - If there is a communication or JSON serialization/deserialization error.
+     */
+    public NameDeduplicationResponse getNameDeduplication(NameDeduplicationRequest request)
+            throws RosetteAPIException, IOException {
+        return sendPostRequest(request, urlBase + NAME_DEDUPLICATION_SERVICE_PATH, NameDeduplicationResponse.class);
     }
 
     /**

@@ -16,20 +16,22 @@
 
 package com.basistech.rosette.apimodel.jackson;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.basistech.rosette.apimodel.Options;
+import com.basistech.rosette.dm.AnnotatedText;
+import com.basistech.util.LanguageCode;
+import com.fasterxml.jackson.annotation.*;
 
-public class EntityMentionMixin extends BaseMixin {
+//CHECKSTYLE:OFF
+@JsonTypeName("AdmRequest")
+public abstract class AdmRequestMixin extends BaseMixin {
+
     @JsonCreator
-    public EntityMentionMixin(
-            @JsonProperty("indocChainId") Integer indocChainId,
-            @JsonProperty("type") String type,
-            @JsonProperty("mention") String mention,
-            @JsonProperty("normalized") String normalized,
-            @JsonProperty("count") Integer count,
-            @JsonProperty("entityId") String entityId,
-            @JsonProperty("confidence") Double confidence
-    ) {
+    protected AdmRequestMixin(
+        @JsonProperty("text") AnnotatedText text,
+        @JsonProperty("options") Options options,
+        @JsonProperty("genre") String genre,
+        @JsonProperty("language") LanguageCode language
+            ) {
         //
     }
 }
